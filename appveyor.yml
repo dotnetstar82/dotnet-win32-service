@@ -1,0 +1,28 @@
+version: '{build}-{branch}'
+os: Visual Studio 2017
+pull_requests:
+  do_not_increment_build_number: true
+branches:
+  only:
+  - develop
+  - master
+skip_tags: true
+configuration: Release
+nuget:
+  disable_publish_on_pr: true
+before_build:
+- cmd: >-
+    dotnet restore
+build:
+  verbosity: normal
+before_package:
+- cmd: >-
+    dotnet pack -c Release --include-symbols
+
+    dotnet clean -c Release
+
+    dotnet pack --force -c Release --include-symbols /p:DisableGitVersionSuffix=true
+test_script:
+- cmd: dotnet test test\DasMulli.Win32.ServiceUtils.Tests\DasMulli.Win32.ServiceUtils.Tests.csproj -c %CONFIGURATION%
+artifacts:
+- path: '**\*.nupkg'
